@@ -1,36 +1,19 @@
 import streamlit as st
-import requests
 import re
 import json
 import urllib.parse
-import time
+from duckduckgo_search import DDGS
 
 st.set_page_config(page_title="Glasses Rim Classifier", layout="wide")
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-}
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_images(query, num=12):
-    """Fetch image thumbnail URLs from Google Images."""
-    url = 'https://www.google.com/search'
-    params = {'tbm': 'isch', 'q': query}
+    """Fetch image URLs from DuckDuckGo."""
     try:
-        resp = requests.get(url, params=params, headers=HEADERS, timeout=8)
-        resp.raise_for_status()
-        html = resp.text
-        urls = re.findall(r'data-src=["\']([^"\']+?)["\']', html)
-        urls += re.findall(r'\["(https?://encrypted-tbn0\.gstatic\.com/images\?[^"]+)"', html)
-        seen = set()
-        unique = []
-        for u in urls:
-            if u not in seen:
-                seen.add(u)
-                unique.append(u)
-        return unique[:num]
+        with DDGS() as ddgs:
+            results = list(ddgs.images(query, max_results=num))
+            return [r['thumbnail'] for r in results if 'thumbnail' in r]
     except Exception:
         return []
 
