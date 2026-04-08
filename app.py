@@ -12,7 +12,7 @@ HEADERS = {
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_images(query, num=12):
+def fetch_images(query, num=4):
     """Fetch image URLs from Bing Images."""
     try:
         resp = requests.get(
